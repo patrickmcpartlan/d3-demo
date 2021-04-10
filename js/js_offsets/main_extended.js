@@ -17,10 +17,10 @@ function setMap(){
 
 	//create Albers equal area conic projection centered on France
 	var projection = d3.geoAlbers()
-		.center([0, 46])
+		.center([-89, 41])
 		.rotate([-2, 0])
 		.parallels([43, 62])
-		.scale(2500)
+		.scale(50)
 		.translate([width / 2, height / 2]);
 
 	var path = d3.geoPath()
@@ -28,9 +28,9 @@ function setMap(){
 
 	//use Promise.all to parallelize asynchronous data loading
 	var promises = [];
-	promises.push(d3.csv("data/unitsData.csv")); //load attributes from csv
-	promises.push(d3.json("data/EuropeCountries.topojson")); //load background spatial data
-	promises.push(d3.json("data/FranceRegions.topojson")); //load choropleth spatial data
+	promises.push(d3.csv("data/AgData.csv")); //load attributes from csv
+	promises.push(d3.json("data/States.topojson")); //load background spatial data
+	promises.push(d3.json("data/Counties.topojson")); //load choropleth spatial data
 	Promise.all(promises).then(callback);
 
 	function callback(data){
@@ -58,8 +58,8 @@ function setMap(){
 			.attr("d", path); //project graticule lines
 
 		//translate europe TopoJSON
-		var europeCountries = topojson.feature(europe, europe.objects.EuropeCountries),
-			franceRegions = topojson.feature(france, france.objects.FranceRegions).features;
+		var states = topojson.feature(europe, europe.objects.States),
+			counties = topojson.feature(france, france.objects.Counties).features;
 
 		//add Europe countries to map
 		var countries = map.append("path")

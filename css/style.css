@@ -1,14 +1,89 @@
+header{
+    font-size:xx-large;
+    font-weight: 400;
+    
+}
 
+.map {
+	border: medium solid #888;
+	margin: 10px 0 0 20px;
+}
+
+.chart {
+    float: right;
+    margin: 7px 20px 0 0;
+}
+
+.chartTitle {
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 1.5em;
+    font-weight: bold;
+    
+}
+
+.chartBackground {
+    fill: rgba(128,128,128,.2);
+    outline: black;
+}
+
+.chartFrame {
+    fill: none;
+    stroke: #999;
+    stroke-width: 3px;
+    shape-rendering: crispEdges;
+}
 
 .axis path,
 .axis line {
     fill: none;
-    stroke: black;
+    stroke: #999;
     stroke-width: 1px;
     shape-rendering: crispEdges;
 }
 
 .axis text {
     font-family: sans-serif;
-    font-size: 0.9em;
+    font-size: 0.8em;
+    fill: #999;
 }
+
+
+.numbers {
+    fill: white;
+    font-family: sans-serif;
+}
+
+.states {
+	fill: #FFF;
+	stroke: #CCC;
+	stroke-width: 2px;
+}
+
+.counties {
+	stroke: #000;
+    stroke-width: 1.5px;
+    stroke-linecap: round;
+}
+
+.gratBackground {
+	fill: #7FDBFF;
+}
+
+.dropdown {
+    position: absolute;
+    top: 60px;
+    left: 40px;
+    z-index: 10;
+    font-family: sans-serif;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 2px;
+    border: 1px solid #999;
+    box-shadow: 2px 2px 4px #999;
+}
+
+option {
+    font-weight: normal;
+}
+

@@ -1,35 +1,23 @@
-<html>
-    <head>
-        <meta charset=”utf-8”>
-        <title>The D3 Map Depiction</title>
-        <!--stylesheet-->
-        <link rel="stylesheet" href="css/style.css" />
-        <!--d3 libraries-->
-        <script src="https://d3js.org/d3.v6.min.js"></script> 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-        <script src="lib/queue.js"></script>
-        
-        <!--Fix Flat Icon Error Message-->
-        <link rel="shortcut icon" href="#">
-    </head>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		<title>D3 Coordinated Visualization</title>
+		<header>Illinois Soil Conservation Transect Survey Reports</header>
 
-    <body>
-        <h1>D3 Experience</h1>
-        <!--d3 libraries-->
-        <script src="https://d3js.org/d3.v6.min.js"></script> 
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script> -->
-        <script src="https://unpkg.com/topojson@3"></script>
-        <script src="https://d3js.org/d3-queue.v3.min.js"></script>        
-        <div id='description'>
-            Illinois Conservation Data
-        </div>
+		<!--external stylesheet-->
+		<link rel="stylesheet" href="css/style.css">
+	</head>
 
+	<body>
+		<!--libraries-->
+		<script type="text/javascript" src="lib/d3.js"></script>
+		<script type="text/javascript" src="lib/d3-selection-multi.min.js"></script>
+		<script type="text/javascript" src="lib/topojson.min.js"></script>
+		<script type="text/javascript" src="lib/simple-statistics.min.js"></script>
 
-
-         <!--primary javascript-->
-        <script src="js/main_Ext.js"></script>
-        
-
-
-    </body>
+		<!--main script-->
+		<script type="text/javascript" src="js/Main_Reformat.js"></script>
+	</body>
 </html>
