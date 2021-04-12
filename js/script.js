@@ -1,12 +1,12 @@
 //First line of main.js...wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 
-  //pseudo-global variables
+  //create global variables for the csv values
   var attrArray = ["CornNoTill", "Erosion", "SoyNoTill", "CornSyNoTill", "PercentCCResidue"]
-  var expressed = attrArray[0]; //initial attribute
+  var expressed = attrArray[0]; //primary attribute
   
-  //chart dimensions
-  var chartWidth = window.innerWidth * .425, 
+  //specify the chart dimensions
+  var chartWidth = window.innerWidth * .300, 
   chartHeight = 473,
   leftPadding = 25, 
   rightPadding = 2, 
@@ -18,14 +18,14 @@
   //scale to size bars in regards to the frame and axis
   var yScale = d3.scaleLinear()
   .range([chartHeight -10, 0])
-  .domain([0, 100]);
+  .domain([0, 88*1.1]);
   
-  //begin script when window loads
+  //load script when window opens 
   window.onload = setMap();
-  
+  //create a function to set the map
   function setMap(){
-    //map frame dimensions
-    var width = window.innerWidth * 0.5,
+    //give the dimensions of the map
+    var width = window.innerWidth * .35,
       height = 960;
   
     //create new svg container for the map
@@ -34,35 +34,37 @@
       .attr("class", "map")
       .attr("width", width)
       .attr("height", height);
-  
+      //create a unique projection for this map and focus in on the AOI
       var projection = d3.geoAlbers()
         .center([0, 39.90])
         .rotate([89.25, 0])
         .parallels([40, 45])
-        .scale(8775) //      .scale(8775)
+        .scale(8775) //Scale to a good extent around illinois 
         .translate([width / 2, height / 2])
   
   
-        
+    //create a path and ultimatley link to data tied to projection    
     var path = d3.geoPath()
       .projection(projection);
-  
+    //load using the promises capabilites (d3 version 5)
     var promises = [];
     promises.push(d3.csv("data/ILAGDATA_.csv"));
     promises.push(d3.json("data/UsaStates_.topojson"));
     promises.push(d3.json("data/IllinoisCounties_.topojson"));
     Promise.all(promises).then(callback);
-  
+    //create a function to place all the data on the map
     function callback(data){
-  
-      [csvData, backstates, ilcounties] = data;
+          //give each data set a spot in the data array
+      csvData = data[0];
+      backstates = data[1];
+      ilcounties = data[2];
   
   
       //create graticule generator
       var graticule = d3.geoGraticule()
   
   
-      //create graticule background
+      //create graticule background for lake michigan
       var gratBackground = map.append("path")
         .datum(graticule.outline()) //bind graticule background
         .attr("class", "gratBackground") //assign class for styling
@@ -70,23 +72,23 @@
         .attr('opacity', '.25')
   
   
-  
+      //create variables for the topojsons
       var usaStates = topojson.feature(backstates, backstates.objects.UsaStates_),
         illinoisCounties = topojson.feature(ilcounties, ilcounties.objects.IllinoisCounties_).features;
-  
+      //create variable for backgound states
       var usaStates = map.append("path")
         .datum(usaStates)
         .attr("class", "states")
         .attr("d", path);
-  
+      //call the datajoin function
     illinoisCounties = dataJoin(illinoisCounties, csvData);
-  
+      //match the color scale function with the csvdata
     var colorScale = makeColorScale(csvData);
-  
+      //add the counties to the webpage map
     setEnumerationUnits(illinoisCounties, map, path, colorScale);
-  
+      //add the chart to the webpage
     setChart(csvData, colorScale);
-  
+      //create a dropdown menu html element
     createDropdown(csvData)
   
   
@@ -96,17 +98,19 @@
   
   };//Last line of set map
   
+
+  //Join the counties and the csv data
   function dataJoin(illinoisCounties, csvData){
-  
+  //get the joing attribute for each value within csv
     for (var i=0; i<csvData.length; i++){
       var csvCounty = csvData[i]; //current county in loop
       var csvKey = csvCounty.NAME; //primary key
-  
-      //loop through counties
+      
+      //get the joing attribute for each value within csv
       for (var a=0; a<illinoisCounties.length; a++){
         var geojsonProps = illinoisCounties[a].properties;
         var geojsonKey = geojsonProps.NAME;
-  
+        //if linking attribute is valid
         if (geojsonKey == csvKey) {
   
           //assign attributes
@@ -117,10 +121,12 @@
         };
       };
     };
-  console.log(illinoisCounties);
+    //return values from the join for ultimatley placing on the map
   return illinoisCounties;
   };
-  
+
+
+  //make a color scale and link it to a specified classification method
   function makeColorScale(data){
     var colorClasses = ['#a6611a','#dfc27d','#bae4b3','#a6d96a','#1a9641']; //Creidt:ColorBrewer2.org
   
@@ -137,37 +143,11 @@
   
     colorScale.domain(domainArray);
   
-  //   var minmax = [
-  //     d3.min(data, function(d) {return parseFloat(d[expressed]); }),
-  //     d3.max(data, function(d) {return parseFloat(d[expressed]); })
-  //   ];
-  //   colorScale.domain(minmax);
-  // //End of equal interval
-  
-  //Jenks Natural Breaks
-  // var colorScale = d3.scaleThreshold()
-  //   .range(colorClasses);
-  
-  // var domainArray = [];
-  // for (var i=0; i<data.length; i++){
-  //   var value =parseFloat(data[i][expressed]);
-  //   domainArray.push(value);
-  // };
-  
-  // var clusters = ss.ckmeans(domainArray, 5);
-  // domainArray = clusters.map(function(d){
-  //   return d3.min(d);
-  // });
-  // domainArray.shift();
-  
-  // colorScale.domain(domainArray);
-  
-  ///End of Jenks 
-    console.log(colorScale)
+
     return colorScale;
   }
   
-  
+  //obtain the county data (path) for the map 
   
   function setEnumerationUnits(illinoisCounties, map, path, colorScale){
       var counties = map.selectAll(".counties")
@@ -179,7 +159,7 @@
       })
       .attr("d", path)
       .style("fill", function(d){
-        return colorScale(d.properties[expressed]);
+        return colorScale(d.properties[expressed]); //style the enumeration units
       })
       .on("mouseover", function(d){
         console.log(d.properties)
@@ -194,11 +174,11 @@
       .text('{"stroke": "#000", "stroke-width": "0.5px"}');
   
   };
-  
+  //test for the datavalues
   function choropleth(props, colorScale){
     //verify value is a number
     var value = parseFloat(props[expressed]);
-    //Assign gray if not a color
+    //Assign gray if not a number
     if (typeof value == 'number' && !isNaN(value)){
       return colorScale(value);
     } else {
@@ -206,9 +186,8 @@
     };
   };
   
-  ///Create synced bar chart
+  ///Create a standalone bar chart
   function setChart(csvData, colorScale){
-    //dimensions
   
   //second svg onto the webpage for the chart
     var chart =  d3.select("body")
@@ -218,16 +197,14 @@
       .attr("class", "chart");
     
   //scale to size bars in regards to the frame and axis
-  var yScaleT = d3.scaleLinear()
-  .range([463, 0])
-  .domain([0, 100]);
-    
+
+    //create the chartbackground fill
     var chartBackground = chart.append("rect")
       .attr("class", "chartBackground")
       .attr("width", chartInnerWidth)
       .attr("height", chartInnerHeight)
       .attr("transform", translate);
-  
+  //Asign a bar to each county
     var bars = chart.selectAll(".bar")
       .data(csvData)
       .enter()
@@ -236,36 +213,28 @@
         return b[expressed]-a[expressed]
       })
       .attr("class", function(d){
-        return "bar " + d.NAME; //Bars or Bar?
+        return "bar " + d.NAME; //Assign the class to match the text 
       })
       .attr("width", chartInnerWidth / csvData.length - 1)
-      .on("mouseover", highlight)
+      .on("mouseover", highlight) //Implement user feedback on the bars to go with map
       .on("mouseout", dehighlight)
       .on("mousemove", moveLabel);
-      
+  //Create a desc of what to get the bars back to once no longer highlighted
       var desc = bars.append("desc")
       .text('{"stroke": "none", "stroke-width": "0.5px"}');
   
-  
+  //place an default chart title for the graph
       var chartTitle = chart.append("text")
           .attr("x", 30)
           .attr("y", 40)
           .attr("class", "chartTitle")
-          .text("Percentage of  " + expressed + " in each county");
+          .text("Percent of  " + expressed + " per county");
   
-      // var yAxis = d3.axisLeft()
-      //   .scale(yScaleT)
-      //   .orient("left");
-  
-      // var axis = chart.append("g")
-      //   .attr("class", "axis")
-      //   .attr("transform", translate)
-      //   .call(yAxis)
-  
+      //create a frame to surround the chart 
       var chartFrame = chart.append("g")
       .attr("class", "chartFrame")
-      .attr("width", chartInnerWidth)
-      .attr("height", chartInnerHeight)
+      .attr("width", chartInnerWidth * topBottomPadding)
+      .attr("height", chartInnerHeight + topBottomPadding)
       .attr("transform", translate);
   
       //Implement update Chart function
@@ -281,12 +250,12 @@
       .on("change", function(){
         changeAttribute(this.value, csvData)
       });
-  
+  //Set a default text for the drop down box 
     var initialOption = dropdown.append("option")
       .attr("class", "initialOption")
       .attr("disabled", "true")
       .text("Select Attribute");
-  
+  //create one option element for each attribute
     var attrOptions = dropdown.selectAll("attrOptions")
       .data(attrArray)
       .enter()
@@ -297,15 +266,18 @@
   
   //
   function changeAttribute(attribute, csvData){
-    //
+    //set the csv expressions equal to an attribute variable
     expressed = attribute;
   
-    //
+    //Introuce the MakeColorScale and link to data
     var colorScale = makeColorScale(csvData);
   
-    //
+    //apply the proper stly upon changing the attribute and include transitions
     var counties = d3.selectAll(".counties")
         .transition()
+        .delay(function(d,i){
+          return i / csvData.length * 1000
+        })
         .duration(1000)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale)
@@ -314,39 +286,23 @@
   
   
       /////change color of bars
+      //Apply transitional updates and motions
       var bars = d3.selectAll(".bar")
       .sort(function(a,b){
         return b[expressed] - a[expressed];
       })
       .transition()
       .delay(function(d,i){
-        return i * 20
+        return i / csvData.length * 1000
       })
-      .duration(500)
+      .duration(2000)
+      .ease(d3.easeBounceOut)
       .style("fill", function(d){
         return choropleth(d, colorScale);
       });
       updateChart(bars, csvData.length, colorScale);
   
-      
-  
-      // //re-sort, resize, and recolor bars
-      // var bars = d3.selectAll(".bar")
-      //     //re-sort bars
-      //     .sort(function(a, b){
-      //         return b[expressed] - a[expressed];
-      //     })
-      //     .transition() //add animation
-      //     .delay(function(d, i){
-      //         return i * 20
-      //     })
-      //     .transition()
-      //     .delay(function(d,i){
-      //       return i * 20
-      //     })
-      //     .duration(500);
-  
-      // updateChart(bars, csvData.length, colorScale);    
+        
       
   };
   
@@ -356,36 +312,35 @@
     bars.attr("x", function(d,i){
       return i * (chartInnerWidth / n) + leftPadding;
     })
-        //resize bars
+        //change the size of the bars upon update
         .attr("height", function(d,i){
-          return 463 - yScale(parseFloat(d[expressed]));
+          return 473 - yScale(parseFloat(d[expressed]));
         })
         .attr("y", function(d,i){
           return yScale(parseFloat(d[expressed])) + topBottomPadding;
         })
-        //recolor bars
+        //Color the bars to fit the colorscale upon change
         .style("fill", function(d){
           return choropleth(d,colorScale);
         });
-    //Update the title to go with the bars
+    //Update the title based on the new attribute depicted
     var chartTitle = d3.select(".chartTitle")
-        .text("Percentage of " + expressed + " in each county")
+        .text("Percent of " + expressed + " per county")
   };
-  
-  //highlight counties and bars
-  
+  //create the highlight function
   function highlight(props){
-    //change outline
+    //change outline when appropriate
     console.log(props)
     var selected = d3.selectAll("." + props.NAME) //select the joined element
     .style("stroke", "white").style("stroke-width", "5")
-    .attr('opacity', '.85')
-  
+    .attr('opacity', '.6')
+  //link the label with the highlight reaction
     setLabel(props)
   };
-  
+  //create a function to follow the highlight to return to normal
   function dehighlight(props){
     var selected = d3.selectAll("." + props.NAME)
+    //give the charecteristics of how it looked initially
       .style("stroke", function(){
         return getStyle(this,"stroke")
       })
@@ -393,10 +348,10 @@
         return getStyle(this, "stroke-width")
       })
       .attr('opacity', '1');
-  
+  //remove the label upon the mouseoff
       d3.select(".infolabel")
         .remove();
-  
+  //retrieve info stored in the desc element
       function getStyle(element,styleName){
         var styleText = d3.select(element)
           .select("desc")
@@ -406,10 +361,11 @@
         return styleObject[styleName];
       };
   }
-  
+  //create a dynamic label to display feature properties
   function setLabel(props){
     var labelAttribute = "<h1>" + props[expressed] +
       "</h1><b>" + expressed + "</b>";
+    //create the page div
     var infolabel = d3.select("body")
       .append("div")
       .attr("class", "infolabel")
